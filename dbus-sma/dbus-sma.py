@@ -681,10 +681,10 @@ class SmaDriver:
     Max_V_H, Max_V_L = bytes(int(self._bms_data.max_battery_voltage*10))
     Min_V_H, Min_V_L = bytes(int(self._bms_data.min_battery_voltage*10))
 
-	voltage = int(self._bms_data.actual_battery_voltage * 10)
-	voltage_H, voltage_L = bytes(voltage)
-	current = int(self._bms_data.battery_current * 10)
-	current_H, current_L = bytes(current)
+    voltage = int(self._bms_data.actual_battery_voltage * 10)
+    voltage_H, voltage_L = bytes(voltage)
+    current = int(self._bms_data.battery_current * 10)
+    current_H, current_L = bytes(current)
 
     msg = can.Message(arbitration_id = CAN_tx_msg["BatChg"], 
       data=[Max_V_L, Max_V_H, Req_Charge_L, Req_Charge_H, Req_Discharge_L, Req_Discharge_H, Min_V_L, Min_V_H],
