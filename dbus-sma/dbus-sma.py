@@ -20,7 +20,7 @@ import yaml
 
 from dbus.mainloop.glib import DBusGMainLoop
 import dbus
-import gobject
+from gi.repository import GObject
 
 import can
 from can.bus import BusState
@@ -301,9 +301,9 @@ class SmaDriver:
     self._changed = True
 
     # create timers (time in msec)
-    gobject.timeout_add(2000, exit_on_error, self._can_bus_txmit_handler)
-    gobject.timeout_add(2000, exit_on_error, self._energy_handler)
-    gobject.timeout_add(20, exit_on_error, self._parse_can_data_handler)
+    GObject.timeout_add(2000, exit_on_error, self._can_bus_txmit_handler)
+    GObject.timeout_add(2000, exit_on_error, self._energy_handler)
+    GObject.timeout_add(20, exit_on_error, self._parse_can_data_handler)
 
 #----
   def __del__(self):
@@ -316,7 +316,7 @@ class SmaDriver:
   def run(self):
     # Start and run the mainloop
     logger.info("Starting mainloop, responding only on events")
-    self._mainloop = gobject.MainLoop()
+    self._mainloop = GObject.MainLoop()
 
     try:
       self._mainloop.run()
