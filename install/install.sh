@@ -31,17 +31,35 @@ then
   then
 
     echo "==== Download and install dependencies ===="
-    opkg update
-    opkg install python-misc python-distutils python-numbers python-html python-ctypes python-pkgutil
-    opkg install python-unittest python-difflib python-compile gcc binutils python-dev python-unixadmin python-xmlrpc
-
-    wget https://bootstrap.pypa.io/2.7/get-pip.py
-    python get-pip.py
-    rm get-pip.py
-
-    pip install python-can
-    pip install python-statemachine
-    pip install pyyaml
+    opkg install python3-misc
+	opkg install python3-unittest
+	opkg install python3-misc
+	opkg install python3-distutils
+	opkg install python3-numbers
+	opkg install python3-html
+	opkg install python3-ctypes
+	opkg install python3-pkgutil
+	opkg install python3-unittest
+	opkg install python3-difflib
+	opkg install python3-compile
+	opkg install gcc binutils
+	opkg install python3-dev
+	opkg install python3-unixadmin
+	opkg install python3-xmlrpc
+	opkg install python-distutils
+	opkg install pip
+	opkg install python-pip
+	opkg install *pip
+	opkg install tomllib
+	opkg install *tomll*
+	opkg install python3-gi
+	opkg install python-gi
+	pip install python3-can
+	pip install python3-statemachine
+	pip install pyyaml
+	pip install python-statemachine
+	pip install python-can
+	pip install PyGObject
   fi
 
 	echo "==== Download driver and library ===="
