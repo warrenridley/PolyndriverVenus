@@ -746,7 +746,7 @@ class SmaDriver:
 
       #logger.info("Sent 6 messages on {}".format(self._can_bus.channel_info))
     except (can.CanError) as e:
-      logger.error("CAN BUS Transmit error (is controller missing?): %s" % e.message)
+      logger.error("CAN BUS Transmit error (is controller missing?): %s" % str(e))
     except KeyboardInterrupt:
       pass
 
