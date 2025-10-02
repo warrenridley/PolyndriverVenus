@@ -629,10 +629,11 @@ class SmaDriver:
           .format(soc, volt, current, pv_current))
       return True
 
-    # update bms state data
+    # update bms state data. this is the actual data coming from Venus OS. values had been set further up manually in the code
     self._bms_data.state_of_charge = soc
     self._bms_data.actual_battery_voltage = volt
     self._bms_data.battery_current = current
+    self._bms_data.battery_temperature = temperature
     self._bms_data.pv_current = pv_current
 
     # update the requested bulk current based on the grid solar charge logic
