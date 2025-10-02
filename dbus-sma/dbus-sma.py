@@ -398,7 +398,7 @@ class SmaDriver:
         elif msg.arbitration_id == CANFrames["Battery"]:
           sma_battery["Voltage"] = float(msg.data[0] + msg.data[1]*256) / 10
           sma_battery["Current"] = float(getSignedNumber(msg.data[2] + msg.data[3]*256, 16)) / 10
-          sma_battery[""] = float(getSignedNumber(msg.data[4] + msg.data[5]*256, 16)) / 10
+          sma_battery["Temperature"] = float(getSignedNumber(msg.data[4] + msg.data[5]*256, 16)) / 10
           self._updatedbus()   
         elif msg.arbitration_id == CANFrames["Bits"]:
           if msg.data[2]&128:
