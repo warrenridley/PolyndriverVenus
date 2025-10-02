@@ -148,7 +148,7 @@ class BMSData:
     self.actual_battery_voltage = 0.0
     self.req_discharge_amps = max_discharge_amps
     self.battery_current = 0.0
-    self.battery_temperature = None  # Battery temperature in °C, float
+    self.battery_temperature = 0.0  # Battery temperature in °C, float
     self.pv_current = 0.0
 
   def __str__(self):
@@ -398,8 +398,7 @@ class SmaDriver:
         elif msg.arbitration_id == CANFrames["Battery"]:
           sma_battery["Voltage"] = float(msg.data[0] + msg.data[1]*256) / 10
           sma_battery["Current"] = float(getSignedNumber(msg.data[2] + msg.data[3]*256, 16)) / 10
-          sma_battery["Temperature"] = float(getSignedNumber(msg.data[4] + msg.data[5]*256, 16)) / 10
-          self._bms_data.battery_temperature = sma_battery["Temperature"]
+          sma_battery[""] = float(getSignedNumber(msg.data[4] + msg.data[5]*256, 16)) / 10
           self._updatedbus()   
         elif msg.arbitration_id == CANFrames["Bits"]:
           if msg.data[2]&128:
@@ -449,7 +448,7 @@ class SmaDriver:
     self._dbusservice["/Ac/ActiveIn/P"] = sma_line1["ExtPwr"] + sma_line2["ExtPwr"]
     self._dbusservice["/Dc/0/Voltage"] = sma_battery["Voltage"]
     self._dbusservice["/Dc/0/Current"] = sma_battery["Current"] *-1
-    self._dbusservice["/Dc/0/Temperature"] = self._bms_data.battery_temperature
+    self._dbusservice["/Dc/0/Temperature"] = sma_battery["Temperature"]
     self._dbusservice["/Dc/0/Power"] = sma_battery["Current"] * sma_battery["Voltage"] *-1
     
     line1_inv_outpwr = sma_line1["ExtPwr"] + sma_line1["InvPwr"]
@@ -619,12 +618,10 @@ class SmaDriver:
     soc = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Soc')
     volt = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Voltage')
     current = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Current')
+    temperature = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Temperature')
     pv_current = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Pv/Current')
     if (pv_current == None):
       pv_current = 0.0
-    temperature = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Temperature')
-    if temperature is not None:
-      self._bms_data.battery_temperature = temperature
 
     # if we don't have these values, there is nothing to do!
     if (soc == None or volt == None):
