@@ -622,6 +622,8 @@ class SmaDriver:
     pv_current = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Pv/Current')
     if (pv_current == None):
       pv_current = 0.0
+    if (temperature == None):
+	  temperatuure = 4.0
 
     # if we don't have these values, there is nothing to do!
     if (soc == None or volt == None):
