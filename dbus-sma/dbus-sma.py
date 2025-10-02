@@ -449,7 +449,7 @@ class SmaDriver:
     self._dbusservice["/Ac/ActiveIn/P"] = sma_line1["ExtPwr"] + sma_line2["ExtPwr"]
     self._dbusservice["/Dc/0/Voltage"] = sma_battery["Voltage"]
     self._dbusservice["/Dc/0/Current"] = sma_battery["Current"] *-1
-    self._dbusservice["/Dc/0/Temperature"] = sma_battery["Temperature"]
+    self._dbusservice["/Dc/0/Temperature"] = self._bms_data.battery_temperature
     self._dbusservice["/Dc/0/Power"] = sma_battery["Current"] * sma_battery["Voltage"] *-1
     
     line1_inv_outpwr = sma_line1["ExtPwr"] + sma_line1["InvPwr"]
