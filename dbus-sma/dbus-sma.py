@@ -685,6 +685,8 @@ class SmaDriver:
     voltage_H, voltage_L = bytes(voltage)
     current = int(self._bms_data.battery_current * 10)
     current_H, current_L = bytes(current)
+	temperature = int(self._bms_data.battery_temperature * 10)  # tenths of degree
+    temperature_H, temperature_L = bytes(temperature)
 
     msg = can.Message(arbitration_id = CAN_tx_msg["BatChg"], 
       data=[Max_V_L, Max_V_H, Req_Charge_L, Req_Charge_H, Req_Discharge_L, Req_Discharge_H, Min_V_L, Min_V_H],
@@ -695,7 +697,7 @@ class SmaDriver:
       is_extended_id=False)
 
     msg3 = can.Message(arbitration_id = CAN_tx_msg["BatVoltageCurrent"],
-      data=[voltage_L, voltage_H, current_L, current_H, 0x00, 0x00],
+      data=[voltage_L, voltage_H, current_L, current_H, temperature_L, temperature_H],
       is_extended_id=False)
 
     msg4 = can.Message(arbitration_id = CAN_tx_msg["AlarmWarning"],
