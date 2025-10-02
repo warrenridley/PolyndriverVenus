@@ -148,7 +148,7 @@ class BMSData:
     self.actual_battery_voltage = 0.0
     self.req_discharge_amps = max_discharge_amps
     self.battery_current = 0.0
-    self.battery_temperature = 0.0  # Battery temperature in °C, float
+    self.battery_temperature = 5.0  # Battery temperature in °C, float
     self.pv_current = 0.0
 
   def __str__(self):
