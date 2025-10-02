@@ -685,7 +685,7 @@ class SmaDriver:
     voltage_H, voltage_L = bytes(voltage)
     current = int(self._bms_data.battery_current * 10)
     current_H, current_L = bytes(current)
-	temperature = int(self._bms_data.battery_temperature * 10)  # tenths of degree
+    temperature = int(self._bms_data.battery_temperature * 10)  # tenths of degree
     temperature_H, temperature_L = bytes(temperature)
 
     msg = can.Message(arbitration_id = CAN_tx_msg["BatChg"], 
