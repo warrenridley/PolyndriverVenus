@@ -623,7 +623,7 @@ class SmaDriver:
     if (pv_current == None):
       pv_current = 0.0
     if (temperature == None):
-      temperatuure = 4.0
+      temperatuure = 4.0 #this is here so i know if it is none for me and to stop error
 
     # if we don't have these values, there is nothing to do!
     if (soc == None or volt == None):
