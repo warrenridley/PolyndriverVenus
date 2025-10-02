@@ -217,7 +217,8 @@ class SmaDriver:
     dummy = {'code': None, 'whenToLog': 'configChange', 'accessLevel': None}
     dbus_tree = {'com.victronenergy.system': 
       {'/Dc/Battery/Soc': dummy, '/Dc/Battery/Current': dummy, '/Dc/Battery/Voltage': dummy, \
-        '/Dc/Pv/Current': dummy, '/Ac/PvOnOutput/L1/Power': dummy, '/Ac/PvOnOutput/L2/Power': dummy, }}
+        '/Dc/Pv/Current': dummy, '/Ac/PvOnOutput/L1/Power': dummy, '/Ac/PvOnOutput/L2/Power': dummy, \
+	     '/Dc/Battery/Temperature': dummy}}
 
     self._dbusmonitor = self._create_dbus_monitor(dbus_tree, valueChangedCallback=self._dbus_value_changed)
 
