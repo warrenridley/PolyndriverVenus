@@ -681,7 +681,7 @@ class SmaDriver:
     Max_V_H, Max_V_L = bytes(int(self._bms_data.max_battery_voltage*10))
     Min_V_H, Min_V_L = bytes(int(self._bms_data.min_battery_voltage*10))
 
-    voltage = int(self._bms_data.actual_battery_voltage * 10)
+    voltage = int(self._bms_data.actual_battery_voltage * 100)
     voltage_H, voltage_L = bytes(voltage)
     current = int(self._bms_data.battery_current * 10)
     current_H, current_L = bytes(current)
