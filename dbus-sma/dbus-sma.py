@@ -87,7 +87,7 @@ driver = {
 	'connection'  : "com.victronenergy.vebus.smasunnyisland"
 }
 
-CAN_tx_msg = {"BatChg": 0x351, "BatSoC": 0x355, "BatVoltageCurrent" : 0x356, "AlarmWarning": 0x35a, "BMSOem": 0x35e, "BatData": 0x35f}
+CAN_tx_msg = {"BatChg": 0x351, "BatSoC": 0x355, "BatVoltageCurrent" : 0x356, "BatStatus" : 0x359, "AlarmWarning": 0x35a, "BMSOem": 0x35e, "BatData": 0x35f}
 CANFrames = {"ExtPwr": 0x300, "InvPwr": 0x301, "OutputVoltage": 0x304, "Battery": 0x305, "Relay": 0x306, "Bits": 0x307, "LoadPwr": 0x308, "ExtVoltage": 0x309}
 sma_line1 = {"OutputVoltage": 0, "ExtPwr": 0, "InvPwr": 0, "ExtVoltage": 0, "ExtFreq": 0.00, "OutputFreq": 0.00}
 sma_line2 = {"OutputVoltage": 0, "ExtPwr": 0, "InvPwr": 0, "ExtVoltage": 0}
@@ -719,6 +719,10 @@ class SmaDriver:
 
     msg6 = can.Message(arbitration_id = CAN_tx_msg["BatData"],
       data=[0x03, 0x04, 0x0a, 0x04, 0x76, 0x02, 0x00, 0x00],
+      is_extended_id=False)
+
+    msg7 = can.Message(arbitration_id = CAN_tx_msg["BatStatus"],
+      data=[0x00, 0x00, 0x00, 0x00, 0x06, 0x50, 0x4E, 0x00],
       is_extended_id=False)
 
     #logger.debug(self._can_bus)
