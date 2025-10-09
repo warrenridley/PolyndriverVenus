@@ -630,6 +630,8 @@ class SmaDriver:
       pv_current = 0.0
     if (temperature == None):
       temperatuure = 4.0 #this is here so i know if it is none for me and to stop error
+    if (info_maxdischargecurrent == None):
+      info_maxdischargecurrent = 0.0
 
     # if we don't have these values, there is nothing to do!
     if (soc == None or volt == None):
@@ -708,14 +710,14 @@ class SmaDriver:
     info_maxdischargecurrent = int(self._bms_data.maxdischargecurrent * 10)
     maxdischargecurrent_H, maxdischargecurrent_L = bytes(info_maxdischargecurrent)
     info_maxchargecurrent = int(self._bms_data.maxchargecurrent * 10)
-    info_maxchargecurrent_H, info_maxchargecurrent_L = bytes(info_maxchargecurrent)
+    maxchargecurrent_H, maxchargecurrent_L = bytes(info_maxchargecurrent)
     info_maxchargevoltage = int(self._bms_data.maxchargevoltage * 10)
-    info_maxchargevoltage_H, info_maxchargevoltage_L = bytes(info_maxchargevoltage)
+    maxchargevoltage_H, maxchargevoltage_L = bytes(info_maxchargevoltage)
     info_batterylowvoltage = int(self._bms_data.batterylowvoltage * 10)
-    info_batterylowvoltage_H, info_batterylowvoltage_L = bytes(info_batterylowvoltage)
+    batterylowvoltage_H, batterylowvoltage_L = bytes(info_batterylowvoltage)
 
     msg = can.Message(arbitration_id = CAN_tx_msg["BatChg"], 
-      data=[info_maxchargevoltage_L, info_maxchargevoltage_H, info_maxchargecurrent_L, info_maxchargecurrent_H, maxdischargecurrent_L, maxdischargecurrent_H, info_batterylowvoltage_L, info_batterylowvoltage_H],
+      data=[maxchargevoltage_L, maxchargevoltage_H, maxchargecurrent_L, maxchargecurrent_H, maxdischargecurrent_L, maxdischargecurrent_H, batterylowvoltage_L, batterylowvoltage_H],
       is_extended_id=False)
 
     msg2 = can.Message(arbitration_id = CAN_tx_msg["BatSoC"],
