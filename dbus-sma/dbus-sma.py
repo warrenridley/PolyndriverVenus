@@ -715,8 +715,7 @@ class SmaDriver:
     info_batterylowvoltage_H, info_batterylowvoltage_L = bytes(info_batterylowvoltage)
 
     msg = can.Message(arbitration_id = CAN_tx_msg["BatChg"], 
-      data=[info_maxchargevoltage_L, info_maxchargevoltage_H, info_maxchargecurrent_L, info_maxchargecurrent_H, \
-       maxdischargecurrent_L, maxdischargecurrent_H, info_batterylowvoltage_L, info_batterylowvoltage_H],
+      data=[info_maxchargevoltage_L, info_maxchargevoltage_H, info_maxchargecurrent_L, info_maxchargecurrent_H, maxdischargecurrent_L, maxdischargecurrent_H, info_batterylowvoltage_L, info_batterylowvoltage_H],
       is_extended_id=False)
 
     msg2 = can.Message(arbitration_id = CAN_tx_msg["BatSoC"],
