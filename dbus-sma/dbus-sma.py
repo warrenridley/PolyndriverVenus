@@ -72,6 +72,7 @@ logger.setLevel(logging.INFO)
 # TODO: change to input param
 #canBusChannel = "/dev/ttyACM0"
 canBusChannel = "can5"
+canBusChannelBMS = "can2"  # BMS data input channel
 
 #canBusType = "slcan"
 canBusType = "socketcan"
@@ -93,6 +94,17 @@ sma_line1 = {"OutputVoltage": 0, "ExtPwr": 0, "InvPwr": 0, "ExtVoltage": 0, "Ext
 sma_line2 = {"OutputVoltage": 0, "ExtPwr": 0, "InvPwr": 0, "ExtVoltage": 0}
 sma_battery = {"Voltage": 0, "Current": 0}
 sma_system = {"State": 0, "ExtRelay" : 0, "ExtOk" : 0, "Load" : 0}
+
+# Store received BMS message templates from can2
+bms_msg_templates = {
+  "BatChg": None,
+  "BatSoC": None,
+  "BatVoltageCurrent": None,
+  "BatStatus": None,
+  "AlarmWarning": None,
+  "BMSOem": None,
+  "BatData": None
+}
 
 settings = 0
 
@@ -183,6 +195,7 @@ class SmaDriver:
     DBusGMainLoop(set_as_default=True)
 
     self._can_bus = False
+    self._can_bus_bms = False  # CAN bus for receiving BMS data
 
     self._safety_off = False   #flag to see if we every shut the inverters off due to low batt. 
 
@@ -191,6 +204,12 @@ class SmaDriver:
       self._can_bus = can.interface.Bus(bustype=canBusType, channel=canBusChannel, bitrate=500000)
     except can.CanError as e:
      logger.error(e)
+
+    logger.debug("BMS Can bus init")
+    try :
+      self._can_bus_bms = can.interface.Bus(bustype=canBusType, channel=canBusChannelBMS, bitrate=500000)
+    except can.CanError as e:
+     logger.error("BMS CAN bus error (may not be connected): %s" % str(e))
 
     logger.debug("Can bus init done")
 
@@ -307,6 +326,7 @@ class SmaDriver:
     GLib.timeout_add(2000, exit_on_error, self._can_bus_txmit_handler)
     GLib.timeout_add(2000, exit_on_error, self._energy_handler)
     GLib.timeout_add(20, exit_on_error, self._parse_can_data_handler)
+    GLib.timeout_add(20, exit_on_error, self._parse_bms_can_data_handler)
 
 #----
   def __del__(self):
@@ -314,6 +334,10 @@ class SmaDriver:
       self._can_bus.shutdown()
       self._can_bus = False
       logger.debug("bus shutdown")
+    if (self._can_bus_bms):
+      self._can_bus_bms.shutdown()
+      self._can_bus_bms = False
+      logger.debug("BMS bus shutdown")
 
 #----
   def run(self):
@@ -428,6 +452,55 @@ class SmaDriver:
     except Exception as e:
       exception_type = type(e).__name__
       logger.error("Exception occured: {0}, {1}".format(exception_type, e))
+
+    return True
+
+#----
+  # called by timer every 20 msec to read BMS messages from can2
+  def _parse_bms_can_data_handler(self):
+    global bms_msg_templates
+    
+    if not self._can_bus_bms:
+      return True
+    
+    try:
+      # read all available BMS messages
+      while True:
+        msg = self._can_bus_bms.recv(0)  # non-blocking
+        if (msg is None):
+          break
+        
+        # Store message templates for the BMS messages we care about
+        if msg.arbitration_id == CAN_tx_msg["BatChg"]:
+          bms_msg_templates["BatChg"] = list(msg.data)
+          logger.debug("Received BatChg template from can2: {}".format(msg.data))
+        elif msg.arbitration_id == CAN_tx_msg["BatSoC"]:
+          bms_msg_templates["BatSoC"] = list(msg.data)
+          logger.debug("Received BatSoC template from can2: {}".format(msg.data))
+        elif msg.arbitration_id == CAN_tx_msg["BatVoltageCurrent"]:
+          bms_msg_templates["BatVoltageCurrent"] = list(msg.data)
+          logger.debug("Received BatVoltageCurrent template from can2: {}".format(msg.data))
+        elif msg.arbitration_id == CAN_tx_msg["BatStatus"]:
+          bms_msg_templates["BatStatus"] = list(msg.data)
+          logger.debug("Received BatStatus template from can2: {}".format(msg.data))
+        elif msg.arbitration_id == CAN_tx_msg["AlarmWarning"]:
+          bms_msg_templates["AlarmWarning"] = list(msg.data)
+          logger.debug("Received AlarmWarning template from can2: {}".format(msg.data))
+        elif msg.arbitration_id == CAN_tx_msg["BMSOem"]:
+          bms_msg_templates["BMSOem"] = list(msg.data)
+          logger.debug("Received BMSOem template from can2: {}".format(msg.data))
+        elif msg.arbitration_id == CAN_tx_msg["BatData"]:
+          bms_msg_templates["BatData"] = list(msg.data)
+          logger.debug("Received BatData template from can2: {}".format(msg.data))
+          
+    except (KeyboardInterrupt) as e:
+      self._mainloop.quit()
+    except (can.CanError) as e:
+      logger.error("BMS CAN error: %s" % str(e))
+      pass
+    except Exception as e:
+      exception_type = type(e).__name__
+      logger.error("Exception in BMS CAN handler: {0}, {1}".format(exception_type, e))
 
     return True
 
@@ -697,32 +770,97 @@ class SmaDriver:
     temperature = int(self._bms_data.battery_temperature * 10)  # tenths of degree
     temperature_H, temperature_L = bytes(temperature)
 
+    # Use received BMS message templates if available, otherwise use default values
+    global bms_msg_templates
+    
+    # BatChg message (0x351)
+    if bms_msg_templates["BatChg"] is not None:
+      msg_data = list(bms_msg_templates["BatChg"])
+      # Update with Venus OS values
+      msg_data[0] = Max_V_L
+      msg_data[1] = Max_V_H
+      msg_data[2] = Req_Charge_L
+      msg_data[3] = Req_Charge_H
+      msg_data[4] = Req_Discharge_L
+      msg_data[5] = Req_Discharge_H
+      msg_data[6] = Min_V_L
+      msg_data[7] = Min_V_H
+    else:
+      msg_data = [Max_V_L, Max_V_H, Req_Charge_L, Req_Charge_H, Req_Discharge_L, Req_Discharge_H, Min_V_L, Min_V_H]
+    
     msg = can.Message(arbitration_id = CAN_tx_msg["BatChg"], 
-      data=[Max_V_L, Max_V_H, Req_Charge_L, Req_Charge_H, Req_Discharge_L, Req_Discharge_H, Min_V_L, Min_V_H],
+      data=msg_data,
       is_extended_id=False)
+
+    # BatSoC message (0x355)
+    if bms_msg_templates["BatSoC"] is not None:
+      msg2_data = list(bms_msg_templates["BatSoC"])
+      # Update with Venus OS values
+      msg2_data[0] = int(self._bms_data.state_of_charge)
+      msg2_data[4] = SoC_HD_L
+      msg2_data[5] = SoC_HD_H
+    else:
+      msg2_data = [int(self._bms_data.state_of_charge), 0x00, 0x64, 0x0, SoC_HD_L, SoC_HD_H]
 
     msg2 = can.Message(arbitration_id = CAN_tx_msg["BatSoC"],
-      data=[int(self._bms_data.state_of_charge), 0x00, 0x64, 0x0, SoC_HD_L, SoC_HD_H],
+      data=msg2_data,
       is_extended_id=False)
+
+    # BatVoltageCurrent message (0x356)
+    if bms_msg_templates["BatVoltageCurrent"] is not None:
+      msg3_data = list(bms_msg_templates["BatVoltageCurrent"])
+      # Update with Venus OS values
+      msg3_data[0] = voltage_L
+      msg3_data[1] = voltage_H
+      msg3_data[2] = current_L
+      msg3_data[3] = current_H
+      msg3_data[4] = temperature_L
+      msg3_data[5] = temperature_H
+    else:
+      msg3_data = [voltage_L, voltage_H, current_L, current_H, temperature_L, temperature_H]
 
     msg3 = can.Message(arbitration_id = CAN_tx_msg["BatVoltageCurrent"],
-      data=[voltage_L, voltage_H, current_L, current_H, temperature_L, temperature_H],
+      data=msg3_data,
       is_extended_id=False)
+
+    # AlarmWarning message (0x35a)
+    if bms_msg_templates["AlarmWarning"] is not None:
+      msg4_data = list(bms_msg_templates["AlarmWarning"])
+    else:
+      msg4_data = [0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00]
 
     msg4 = can.Message(arbitration_id = CAN_tx_msg["AlarmWarning"],
-      data=[0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00],
+      data=msg4_data,
       is_extended_id=False)
+
+    # BMSOem message (0x35e)
+    if bms_msg_templates["BMSOem"] is not None:
+      msg5_data = list(bms_msg_templates["BMSOem"])
+    else:
+      msg5_data = [0x42, 0x41, 0x54, 0x52, 0x49, 0x55, 0x4d, 0x20]
 
     msg5 = can.Message(arbitration_id = CAN_tx_msg["BMSOem"],
-      data=[0x42, 0x41, 0x54, 0x52, 0x49, 0x55, 0x4d, 0x20],
+      data=msg5_data,
       is_extended_id=False)
+
+    # BatData message (0x35f)
+    if bms_msg_templates["BatData"] is not None:
+      msg6_data = list(bms_msg_templates["BatData"])
+    else:
+      msg6_data = [0x03, 0x04, 0x0a, 0x04, 0x76, 0x02, 0x00, 0x00]
 
     msg6 = can.Message(arbitration_id = CAN_tx_msg["BatData"],
-      data=[0x03, 0x04, 0x0a, 0x04, 0x76, 0x02, 0x00, 0x00],
+      data=msg6_data,
       is_extended_id=False)
 
+    # BatStatus message (0x359)
+    if bms_msg_templates["BatStatus"] is not None:
+      msg7_data = list(bms_msg_templates["BatStatus"])
+    else:
+      msg7_data = [0x00, 0x00, 0x00, 0x00, 0x06, 0x50, 0x4E, 0x00]
+
     msg7 = can.Message(arbitration_id = CAN_tx_msg["BatStatus"],
-      data=[0x00, 0x00, 0x00, 0x00, 0x06, 0x50, 0x4E, 0x00],
+      data=msg7_data,
       is_extended_id=False)
 
     #logger.debug(self._can_bus)
