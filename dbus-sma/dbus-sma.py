@@ -621,10 +621,10 @@ class SmaDriver:
     volt = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Voltage')
     current = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Current')
     temperature = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Temperature')
-    info_maxdischargecurrent = self._dbusmontor.get_value('com.victronenergy.system', '/Info/MaxDischargeCurrent')
-    info_maxchargecurrent  = self._dbusmontor.get_value('com.victronenergy.system', '/Info/MaxChargeCurrent')
-    info_maxchargevoltage = self._dbusmontor.get_value('com.victronenergy.system', '/Info/MaxChargeVoltage')
-    info_batterylowvoltage = self._dbusmontor.get_value('com.victronenergy.system', '/Info/BatteryLowVoltage')
+    info_maxdischargecurrent = self._dbusmonitor.get_value('com.victronenergy.system', '/Info/MaxDischargeCurrent')
+    info_maxchargecurrent  = self._dbusmonitor.get_value('com.victronenergy.system', '/Info/MaxChargeCurrent')
+    info_maxchargevoltage = self._dbusmonitor.get_value('com.victronenergy.system', '/Info/MaxChargeVoltage')
+    info_batterylowvoltage = self._dbusmonitor.get_value('com.victronenergy.system', '/Info/BatteryLowVoltage')
     pv_current = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Pv/Current')
     if (pv_current == None):
       pv_current = 0.0
