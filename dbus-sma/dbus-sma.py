@@ -87,7 +87,7 @@ driver = {
 	'connection'  : "com.victronenergy.vebus.smasunnyisland"
 }
 
-CAN_tx_msg = {"BatChg": 0x351, "BatSoC": 0x355, "BatVoltageCurrent" : 0x356, "BatStatus" : 0x359, "AlarmWarning": 0x35a, "BMSOem": 0x35e, "BatData": 0x35f}
+CAN_tx_msg = {"BatChg": 0x351, "BatSoC": 0x355, "BatVoltageCurrent" : 0x356, "BatteryStatus" : 0x359, "AlarmWarning": 0x35a, "BMSOem": 0x35e, "BatData": 0x35f}
 CANFrames = {"ExtPwr": 0x300, "InvPwr": 0x301, "OutputVoltage": 0x304, "Battery": 0x305, "Relay": 0x306, "Bits": 0x307, "LoadPwr": 0x308, "ExtVoltage": 0x309}
 sma_line1 = {"OutputVoltage": 0, "ExtPwr": 0, "InvPwr": 0, "ExtVoltage": 0, "ExtFreq": 0.00, "OutputFreq": 0.00}
 sma_line2 = {"OutputVoltage": 0, "ExtPwr": 0, "InvPwr": 0, "ExtVoltage": 0}
@@ -218,7 +218,8 @@ class SmaDriver:
     dbus_tree = {'com.victronenergy.system': 
       {'/Dc/Battery/Soc': dummy, '/Dc/Battery/Current': dummy, '/Dc/Battery/Voltage': dummy, \
         '/Dc/Pv/Current': dummy, '/Ac/PvOnOutput/L1/Power': dummy, '/Ac/PvOnOutput/L2/Power': dummy, \
-	     '/Dc/Battery/Temperature': dummy}}
+         '/Dc/Battery/Temperature': dummy, '/Info/MaxDischargeCurrent': dummy, '/Info/MaxChargeCurrent': dummy, \
+          '/Info/MaxChargeVoltage': dummy, '/Info/BatteryLowVoltage': dummy}}
 
     self._dbusmonitor = self._create_dbus_monitor(dbus_tree, valueChangedCallback=self._dbus_value_changed)
 
@@ -620,6 +621,10 @@ class SmaDriver:
     volt = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Voltage')
     current = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Current')
     temperature = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Temperature')
+    info_maxdischargecurrent = self._dbusmontor.get_value('com.victronenergy.system', '/Info/MaxDischargeCurrent')
+    info_maxchargecurrent  = self._dbusmontor.get_value('com.victronenergy.system', '/Info/MaxChargeCurrent')
+    info_maxchargevoltage = self._dbusmontor.get_value('com.victronenergy.system', '/Info/MaxChargeVoltage')
+    info_batterylowvoltage = self._dbusmontor.get_value('com.victronenergy.system', '/Info/BatteryLowVoltage')
     pv_current = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Pv/Current')
     if (pv_current == None):
       pv_current = 0.0
@@ -637,6 +642,10 @@ class SmaDriver:
     self._bms_data.actual_battery_voltage = volt
     self._bms_data.battery_current = current
     self._bms_data.battery_temperature = temperature
+    self._bms_data.maxdischargecurrent = info_maxdischargecurrent
+    self._bms_data.maxchargecurrent = info_maxchargecurrent
+    self._bms_data.maxchargevoltage = info_maxchargevoltage
+    self._bms_data.batterylowvoltage = info_batterylowvoltage
     self._bms_data.pv_current = pv_current
 
     # update the requested bulk current based on the grid solar charge logic
@@ -696,9 +705,18 @@ class SmaDriver:
     current_H, current_L = bytes(current)
     temperature = int(self._bms_data.battery_temperature * 10)  # tenths of degree
     temperature_H, temperature_L = bytes(temperature)
+    info_maxdischargecurrent = int(self._bms_data.maxdischargecurrent * 10)
+    maxdischargecurrent_H, maxdischargecurrent_L = bytes(info_maxdischargecurrent)
+    info_maxchargecurrent = int(self._bms_data.maxchargecurrent * 10)
+    info_maxchargecurrent_H, info_maxchargecurrent_L = bytes(info_maxchargecurrent)
+    info_maxchargevoltage = int(self._bms_data.maxchargevoltage * 10)
+    info_maxchargevoltage_H, info_maxchargevoltage_L = bytes(info_maxchargevoltage)
+    info_batterylowvoltage = int(self._bms_data.batterylowvoltage * 10)
+    info_batterylowvoltage_H, info_batterylowvoltage_L = bytes(info_batterylowvoltage)
 
     msg = can.Message(arbitration_id = CAN_tx_msg["BatChg"], 
-      data=[Max_V_L, Max_V_H, Req_Charge_L, Req_Charge_H, Req_Discharge_L, Req_Discharge_H, Min_V_L, Min_V_H],
+      data=[info_maxchargevoltage_L, info_maxchargevoltage_H, info_maxchargecurrent_L, info_maxchargecurrent_H, \
+       maxdischargecurrent_L, maxdischargecurrent_H, info_batterylowvoltage_L, info_batterylowvoltage_H],
       is_extended_id=False)
 
     msg2 = can.Message(arbitration_id = CAN_tx_msg["BatSoC"],
@@ -721,7 +739,7 @@ class SmaDriver:
       data=[0x03, 0x04, 0x0a, 0x04, 0x76, 0x02, 0x00, 0x00],
       is_extended_id=False)
 
-    msg7 = can.Message(arbitration_id = CAN_tx_msg["BatStatus"],
+    msg7 = can.Message(arbitration_id = CAN_tx_msg["BatteryStatus"],
       data=[0x00, 0x00, 0x00, 0x00, 0x06, 0x50, 0x4E, 0x00],
       is_extended_id=False)
 
