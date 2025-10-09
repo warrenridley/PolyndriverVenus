@@ -631,13 +631,13 @@ class SmaDriver:
     if (temperature == None):
       temperatuure = 4.0 #this is here so i know if it is none for me and to stop error
     if (info_maxdischargecurrent == None):
-      info_maxdischargecurrent = 0.0
+      info_maxdischargecurrent = 50.0
     if (info_maxchargecurrent == None):
-      info_maxchargecurrent = 0.0
+      info_maxchargecurrent = 50.0
     if (info_maxchargevoltage == None):
-      info_maxchargevoltage = 0.0
+      info_maxchargevoltage = 5.0
     if (info_batterylowvoltage == None):
-      info_batterylowvoltage = 0.0
+      info_batterylowvoltage = 3.0
 
     # if we don't have these values, there is nothing to do!
     if (soc == None or volt == None):
