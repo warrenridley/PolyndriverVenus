@@ -714,13 +714,13 @@ class SmaDriver:
     temperature = int(self._bms_data.battery_temperature * 10)  # tenths of degree
     temperature_H, temperature_L = bytes(temperature)
     info_maxdischargecurrent = int(self._bms_data.maxdischargecurrent * 10)
-    maxdischargecurrent_H, maxdischargecurrent_L = bytes(info_maxdischargecurrent)
+    maxdischargecurrent_L, maxdischargecurrent_H = info_maxdischargecurrent.to_bytes(2, 'little', signed=True)
     info_maxchargecurrent = int(self._bms_data.maxchargecurrent * 10)
-    maxchargecurrent_H, maxchargecurrent_L = bytes(info_maxchargecurrent)
+    maxchargecurrent_L, maxchargecurrent_H = info_maxchargecurrent.to_bytes(2, 'little', signed=True)
     info_maxchargevoltage = int(self._bms_data.maxchargevoltage * 10)
-    maxchargevoltage_H, maxchargevoltage_L = bytes(info_maxchargevoltage)
+    maxchargevoltage_L, maxchargevoltage_H = info_maxchargevoltage.to_bytes(2, 'little', signed=False)
     info_batterylowvoltage = int(self._bms_data.batterylowvoltage * 10)
-    batterylowvoltage_H, batterylowvoltage_L = bytes(info_batterylowvoltage)
+    batterylowvoltage_L, batterylowvoltage_H = info_batterylowvoltage.to_bytes(2, 'little', signed=True)
 
     msg = can.Message(arbitration_id = CAN_tx_msg["BatChg"], 
       data=[maxchargevoltage_L, maxchargevoltage_H, maxchargecurrent_L, maxchargecurrent_H, maxdischargecurrent_L, maxdischargecurrent_H, batterylowvoltage_L, batterylowvoltage_H],
