@@ -215,11 +215,26 @@ class SmaDriver:
 		# Why this dummy? Because DbusMonitor expects these values to be there, even though we don't
 		# need them. So just add some dummy data. This can go away when DbusMonitor is more generic.
     dummy = {'code': None, 'whenToLog': 'configChange', 'accessLevel': None}
-    dbus_tree = {'com.victronenergy.system': 
-      {'/Dc/Battery/Soc': dummy, '/Dc/Battery/Current': dummy, '/Dc/Battery/Voltage': dummy, \
-        '/Dc/Pv/Current': dummy, '/Ac/PvOnOutput/L1/Power': dummy, '/Ac/PvOnOutput/L2/Power': dummy, \
-         '/Dc/Battery/Temperature': dummy, '/Info/MaxDischargeCurrent': dummy, '/Info/MaxChargeCurrent': dummy, \
-          '/Info/MaxChargeVoltage': dummy, '/Info/BatteryLowVoltage': dummy}}
+    dbus_tree = {
+    'com.victronenergy.system': {
+        '/Dc/Battery/Soc': dummy,
+        '/Dc/Battery/Current': dummy,
+        '/Dc/Battery/Voltage': dummy,
+        '/Dc/Pv/Current': dummy,
+        '/Ac/PvOnOutput/L1/Power': dummy,
+        '/Ac/PvOnOutput/L2/Power': dummy,
+        '/Dc/Battery/Temperature': dummy,
+        '/Dc/Battery/ChargeVoltage': dummy},
+        'com.victronenergy.battery.aggregator': {
+        '/Info/MaxDischargeCurrent': dummy,
+        '/Info/MaxChargeCurrent': dummy,
+        '/Info/BatteryLowVoltage': dummy}}
+
+    #dbus_tree = {'com.victronenergy.system': 
+    #  {'/Dc/Battery/Soc': dummy, '/Dc/Battery/Current': dummy, '/Dc/Battery/Voltage': dummy, \
+    #    '/Dc/Pv/Current': dummy, '/Ac/PvOnOutput/L1/Power': dummy, '/Ac/PvOnOutput/L2/Power': dummy, \
+    #     '/Dc/Battery/Temperature': dummy, '/Info/MaxDischargeCurrent': dummy, '/Info/MaxChargeCurrent': dummy, \
+    #      '/Dc/Battery/ChargeVoltage': dummy, '/Info/BatteryLowVoltage': dummy}}
 
     self._dbusmonitor = self._create_dbus_monitor(dbus_tree, valueChangedCallback=self._dbus_value_changed)
 
