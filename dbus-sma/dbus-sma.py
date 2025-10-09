@@ -754,6 +754,11 @@ class SmaDriver:
       self._can_bus.send(msg6)
       #logger.debug("Message sent on {}".format(self._can_bus.channel_info))
 
+      time.sleep(.100)
+
+      self._can_bus.send(msg7)
+      #logger.debug("Message sent on {}".format(self._can_bus.channel_info))
+
       #logger.info("Sent to SI: {0}, {1}, {2}, {3}, {4}". \
       #  format(self._bms_data.req_discharge_amps, self._bms_data.state_of_charge, \
       #  self._bms_data.actual_battery_voltage, self._bms_data.battery_current, \
