@@ -87,7 +87,7 @@ driver = {
 	'connection'  : "com.victronenergy.vebus.smasunnyisland"
 }
 
-CAN_tx_msg = {"BatChg": 0x351, "BatSoC": 0x355, "BatVoltageCurrent" : 0x356, "BatteryStatus" : 0x359, "AlarmWarning": 0x35a, "BMSOem": 0x35e, "BatData": 0x35f}
+CAN_tx_msg = {"BatChg": 0x351, "BatSoC": 0x355, "BatVoltageCurrent": 0x356, "BatteryStatus": 0x359, "AlarmWarning": 0x35a, "BMSOem": 0x35e, "BatData": 0x35f}
 CANFrames = {"ExtPwr": 0x300, "InvPwr": 0x301, "OutputVoltage": 0x304, "Battery": 0x305, "Relay": 0x306, "Bits": 0x307, "LoadPwr": 0x308, "ExtVoltage": 0x309}
 sma_line1 = {"OutputVoltage": 0, "ExtPwr": 0, "InvPwr": 0, "ExtVoltage": 0, "ExtFreq": 0.00, "OutputFreq": 0.00}
 sma_line2 = {"OutputVoltage": 0, "ExtPwr": 0, "InvPwr": 0, "ExtVoltage": 0}
@@ -727,11 +727,11 @@ class SmaDriver:
       is_extended_id=False)
 
     msg2 = can.Message(arbitration_id = CAN_tx_msg["BatSoC"],
-      data=[int(self._bms_data.state_of_charge), 0x00, 0x64, 0x0, SoC_HD_L, SoC_HD_H],
+      data=[int(self._bms_data.state_of_charge), 0x00, 0x64, 0x0, SoC_HD_L, SoC_HD_H, 0x00, 0x00],
       is_extended_id=False)
 
     msg3 = can.Message(arbitration_id = CAN_tx_msg["BatVoltageCurrent"],
-      data=[voltage_L, voltage_H, current_L, current_H, temperature_L, temperature_H],
+      data=[voltage_L, voltage_H, current_L, current_H, temperature_L, temperature_H, 0x00, 0x00],
       is_extended_id=False)
 
     msg4 = can.Message(arbitration_id = CAN_tx_msg["AlarmWarning"],
@@ -777,6 +777,11 @@ class SmaDriver:
       time.sleep(.100)
 
       self._can_bus.send(msg6)
+      #logger.debug("Message sent on {}".format(self._can_bus.channel_info))
+
+      time.sleep(.100)
+
+      self._can_bus.send(msg7)
       #logger.debug("Message sent on {}".format(self._can_bus.channel_info))
 
       #logger.info("Sent to SI: {0}, {1}, {2}, {3}, {4}". \
