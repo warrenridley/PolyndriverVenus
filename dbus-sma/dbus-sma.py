@@ -226,18 +226,12 @@ class SmaDriver:
             '/Dc/Battery/Temperature': dummy,
             '/Dc/Battery/ChargeVoltage': dummy
         },
-        'com.victronenergybattery.aggregator': {
+        'com.victronenergy.battery.aggregator': {
             '/Info/MaxDischargeCurrent': dummy,
             '/Info/MaxChargeCurrent': dummy,
             '/Info/BatteryLowVoltage': dummy
         }
     }
-
-    #dbus_tree = {'com.victronenergy.system': 
-    #  {'/Dc/Battery/Soc': dummy, '/Dc/Battery/Current': dummy, '/Dc/Battery/Voltage': dummy, \
-    #    '/Dc/Pv/Current': dummy, '/Ac/PvOnOutput/L1/Power': dummy, '/Ac/PvOnOutput/L2/Power': dummy, \
-    #     '/Dc/Battery/Temperature': dummy, '/Info/MaxDischargeCurrent': dummy, '/Info/MaxChargeCurrent': dummy, \
-    #      '/Dc/Battery/ChargeVoltage': dummy, '/Info/BatteryLowVoltage': dummy}}
 
     self._dbusmonitor = self._create_dbus_monitor(dbus_tree, valueChangedCallback=self._dbus_value_changed)
 
@@ -639,10 +633,10 @@ class SmaDriver:
     volt = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Voltage')
     current = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Current')
     temperature = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Temperature')
-    info_maxdischargecurrent = self._dbusmonitor.get_value('com.victronenergybattery.aggregator', '/Info/MaxDischargeCurrent')
-    info_maxchargecurrent  = self._dbusmonitor.get_value('com.victronenergybattery.aggregator', '/Info/MaxChargeCurrent')
+    info_maxdischargecurrent = self._dbusmonitor.get_value('com.victronenergy.battery.aggregator', '/Info/MaxDischargeCurrent')
+    info_maxchargecurrent  = self._dbusmonitor.get_value('com.victronenergy.battery.aggregator', '/Info/MaxChargeCurrent')
     info_maxchargevoltage = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/ChargeVoltage')
-    info_batterylowvoltage = self._dbusmonitor.get_value('com.victronenergybattery.aggregator', '/Info/BatteryLowVoltage')
+    info_batterylowvoltage = self._dbusmonitor.get_value('com.victronenergy.battery.aggregator', '/Info/BatteryLowVoltage')
     pv_current = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Pv/Current')
     if (pv_current == None):
       pv_current = 0.0
