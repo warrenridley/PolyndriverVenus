@@ -17,6 +17,7 @@ import serial
 import socket
 import logging
 import yaml
+import dbus
 
 from dbus.mainloop.glib import DBusGMainLoop
 import dbus
@@ -233,6 +234,16 @@ class SmaDriver:
     }
 
     self._dbusmonitor = self._create_dbus_monitor(dbus_tree, valueChangedCallback=self._dbus_value_changed)
+
+    def get_dbus_value(self, service, path):
+        try:
+            bus = dbus.SystemBus()
+            obj = bus.get_object(service, path)
+            iface = dbus.Interface(obj, 'com.victronenergy.BusItem')
+            return iface.GetValue()
+        except Exception as e:
+            logger.warning(f"Failed to get D-Bus value for {service}:{path} - {e}")
+            return None
 
     self._dbusservice = self._create_dbus_service()
 
@@ -632,10 +643,10 @@ class SmaDriver:
     volt = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Voltage')
     current = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Current')
     temperature = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/Temperature')
-    info_maxdischargecurrent = self._dbusmonitor.get_value('com.victronenergy.battery.aggregator', '/Info/MaxDischargeCurrent')
-    info_maxchargecurrent  = self._dbusmonitor.get_value('com.victronenergy.battery.aggregator', '/Info/MaxChargeCurrent')
+    info_maxdischargecurrent = self.get_dbus_value('com.victronenergy.battery.aggregator', '/Info/MaxDischargeCurrent')
+    info_maxchargecurrent  = self.get_dbus_value('com.victronenergy.battery.aggregator', '/Info/MaxChargeCurrent')
     info_maxchargevoltage = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Battery/ChargeVoltage')
-    info_batterylowvoltage = self._dbusmonitor.get_value('com.victronenergy.battery.aggregator', '/Info/BatteryLowVoltage')
+    info_batterylowvoltage = self.get_dbus_value('com.victronenergy.battery.aggregator', '/Info/BatteryLowVoltage')
     pv_current = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Pv/Current')
     if (pv_current == None):
       pv_current = 0.0
