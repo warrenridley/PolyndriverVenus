@@ -235,15 +235,15 @@ class SmaDriver:
 
     self._dbusmonitor = self._create_dbus_monitor(dbus_tree, valueChangedCallback=self._dbus_value_changed)
 
-  def get_dbus_value(self, service, path):
-      try:
-          bus = dbus.SystemBus()
-          obj = bus.get_object(service, path)
-          iface = dbus.Interface(obj, 'com.victronenergy.BusItem')
-          return iface.GetValue()
-      except Exception as e:
-          logger.warning(f"Failed to get D-Bus value for {service}:{path} - {e}")
-          return None
+    def get_dbus_value(self, service, path):
+        try:
+            bus = dbus.SystemBus()
+            obj = bus.get_object(service, path)
+            iface = dbus.Interface(obj, 'com.victronenergy.BusItem')
+            return iface.GetValue()
+        except Exception as e:
+            logger.warning(f"Failed to get D-Bus value for {service}:{path} - {e}")
+            return None
 
     self._dbusservice = self._create_dbus_service()
 
