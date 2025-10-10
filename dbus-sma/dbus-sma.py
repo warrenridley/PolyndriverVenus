@@ -232,7 +232,7 @@ class SmaDriver:
         }
     }
 
-    self._dbusmonitor = self._create_dbus_monitor(dbus_tree, valueChangedCallback=self._dbus_value_changed, acceptNoDeviceInstance=True)
+    self._dbusmonitor = self._create_dbus_monitor(dbus_tree, valueChangedCallback=self._dbus_value_changed)
 
     self._dbusservice = self._create_dbus_service()
 
