@@ -95,8 +95,6 @@ sma_system = {"State": 0, "ExtRelay" : 0, "ExtOk" : 0, "Load" : 0}
 
 settings = 0
 
-print("Using dbusmonitor.py from:", dbusmonitor.__file__)
-
 #command packets to turn SMAs on or off
 SMA_ON_MSG = can.Message(arbitration_id = 0x35C,    #on
       data=[0b00000001,0,0,0],
