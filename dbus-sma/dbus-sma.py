@@ -37,7 +37,6 @@ from settingsdevice import SettingsDevice  # available in the velib_python repos
 
 from bms_state_machine import BMSChargeStateMachine, BMSChargeModel, BMSChargeController
 
-
 #from settingsdevice import SettingsDevice
 #from logger import setup_logging
 #import delegates
@@ -95,6 +94,8 @@ sma_battery = {"Voltage": 0, "Current": 0}
 sma_system = {"State": 0, "ExtRelay" : 0, "ExtOk" : 0, "Load" : 0}
 
 settings = 0
+
+print("Using dbusmonitor.py from:", dbusmonitor.__file__)
 
 #command packets to turn SMAs on or off
 SMA_ON_MSG = can.Message(arbitration_id = 0x35C,    #on
