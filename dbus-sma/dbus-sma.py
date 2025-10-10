@@ -235,16 +235,6 @@ class SmaDriver:
 
     self._dbusmonitor = self._create_dbus_monitor(dbus_tree, valueChangedCallback=self._dbus_value_changed)
 
-    def get_dbus_value(self, service, path):
-        try:
-            bus = dbus.SystemBus()
-            obj = bus.get_object(service, path)
-            iface = dbus.Interface(obj, 'com.victronenergy.BusItem')
-            return iface.GetValue()
-        except Exception as e:
-            logger.warning(f"Failed to get D-Bus value for {service}:{path} - {e}")
-            return None
-
     self._dbusservice = self._create_dbus_service()
 
     self._dbusservice.add_path('/Serial',        value=12345)
@@ -330,6 +320,16 @@ class SmaDriver:
     GLib.timeout_add(2000, exit_on_error, self._can_bus_txmit_handler)
     GLib.timeout_add(2000, exit_on_error, self._energy_handler)
     GLib.timeout_add(20, exit_on_error, self._parse_can_data_handler)
+
+  def get_dbus_value(self, service, path):
+    try:
+        bus = dbus.SystemBus()
+        obj = bus.get_object(service, path)
+        iface = dbus.Interface(obj, 'com.victronenergy.BusItem')
+        return iface.GetValue()
+    except Exception as e:
+        logger.warning(f"Failed to get D-Bus value for {service}:{path} - {e}")
+        return None
 
 #----
   def __del__(self):
