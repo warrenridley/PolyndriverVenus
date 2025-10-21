@@ -64,7 +64,7 @@ then
 
 	echo "==== Download driver and library ===="
 
-	wget https://github.com/warrenridley/Eg4PolydriverVenus/tree/master/driver/master.zip
+	wget https://github.com/warrenridley/PolyndriverVenus/tree/master/driver/master.zip
 	unzip -qo master.zip
 	rm master.zip
 
