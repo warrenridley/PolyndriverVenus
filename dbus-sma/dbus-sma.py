@@ -87,7 +87,7 @@ driver = {
 	'connection'  : "com.victronenergy.vebus.smasunnyisland"
 }
 
-CAN_tx_msg = {"BatChg": 0x351, "BatSoC": 0x355, "BatVoltageCurrent": 0x356, "BatteryStatus": 0x359, "BatCapacity": 0x379, "AlarmWarning": 0x35a,"Charge": 0x35c, "BMSOem": 0x35e, "BatData": 0x35f}
+CAN_tx_msg = {"BatChg": 0x351, "BatSoC": 0x355, "BatVoltageCurrent": 0x356, "BatteryStatus": 0x359, "Batcell": 0x373, "BatCapacity": 0x379, "AlarmWarning": 0x35a,"Charge": 0x35c, "BMSOem": 0x35e, "BatData": 0x35f}
 CANFrames = {"ExtPwr": 0x300, "InvPwr": 0x301, "OutputVoltage": 0x304, "Battery": 0x305, "Relay": 0x306, "Bits": 0x307, "LoadPwr": 0x308, "ExtVoltage": 0x309}
 sma_line1 = {"OutputVoltage": 0, "ExtPwr": 0, "InvPwr": 0, "ExtVoltage": 0, "ExtFreq": 0.00, "OutputFreq": 0.00}
 sma_line2 = {"OutputVoltage": 0, "ExtPwr": 0, "InvPwr": 0, "ExtVoltage": 0}
@@ -232,7 +232,11 @@ class SmaDriver:
             '/Info/MaxDischargeCurrent': dummy,
             '/Info/MaxChargeCurrent': dummy,
             '/Info/BatteryLowVoltage': dummy,
-            '/InstalledCapacity': dummy
+            '/InstalledCapacity': dummy,
+            '/System/MinCellVoltage': dummy,
+            '/System/MaxCellVoltage': dummy,
+            '/System/MinCellTemperature': dummy,
+            '/System/MaxCellTemperature': dummy
         }
     }
 
@@ -654,6 +658,10 @@ class SmaDriver:
     pv_current = self._dbusmonitor.get_value('com.victronenergy.system', '/Dc/Pv/Current')
     charge_disabled = self._dbusmonitor.get_value('com.victronenergy.system', '/SystemState/ChargeDisabled')
     discharge_disabled = self._dbusmonitor.get_value('com.victronenergy.system', '/SystemState/DischargeDisabled')
+    min_cell_voltage = self.get_dbus_value('com.victronenergy.battery.aggregator', '/System/MinCellVoltage')
+    max_cell_voltage = self.get_dbus_value('com.victronenergy.battery.aggregator', '/System/MaxCellVoltage')
+    min_cell_temperature = self.get_dbus_value('com.victronenergy.battery.aggregator', '/System/MinCellTemperature')
+    max_cell_temperature = self.get_dbus_value('com.victronenergy.battery.aggregator', '/System/MaxCellTemperature')
 
     if (pv_current == None):
       pv_current = 0.0
@@ -673,6 +681,14 @@ class SmaDriver:
       charge_disabled = 0
     if (discharge_disabled == None):
       discharge_disabled = 0
+    if (min_cell_voltage == None):
+      min_cell_voltage = 0.0
+    if (max_cell_voltage == None):
+      max_cell_voltage = 0.0
+    if (min_cell_temperature == None):
+      min_cell_temperature = 0.0
+    if (max_cell_temperature == None):
+      max_cell_temperature = 0.0
 
     # if we don't have these values, there is nothing to do!
     if (soc == None or volt == None):
@@ -760,6 +776,15 @@ class SmaDriver:
     bit7_charge_enable = 1 if charge_disabled == 0 else 0
     bit6_discharge_enable = 1 if discharge_disabled == 0 else 0
     control_byte = (bit7_charge_enable << 7) | (bit6_discharge_enable << 6) | 0x00  # Bits 5-0 = 0
+    min_cell_volt_scaled = int(min_cell_voltage * 1000)
+    max_cell_volt_scaled = int(max_cell_voltage * 1000)
+    min_cell_temp_scaled = int(min_cell_temperature + 273)
+    max_cell_temp_scaled = int(max_cell_temperature + 273)
+    # Pack as unsigned 16-bit little-endian (matches received data format)
+    min_cell_volt_L, min_cell_volt_H = min_cell_volt_scaled.to_bytes(2, 'little', signed=False)
+    max_cell_volt_L, max_cell_volt_H = max_cell_volt_scaled.to_bytes(2, 'little', signed=False)
+    min_cell_temp_L, min_cell_temp_H = min_cell_temp_scaled.to_bytes(2, 'little', signed=False)
+    max_cell_temp_L, max_cell_temp_H = max_cell_temp_scaled.to_bytes(2, 'little', signed=False)
 
     msg = can.Message(arbitration_id = CAN_tx_msg["BatChg"], 
       data=[maxchargevoltage_L, maxchargevoltage_H, maxchargecurrent_L, maxchargecurrent_H, maxdischargecurrent_L, maxdischargecurrent_H, batterylowvoltage_L, batterylowvoltage_H],
@@ -795,6 +820,10 @@ class SmaDriver:
     
     msg9 = can.Message(arbitration_id = CAN_tx_msg["BatCapacity"],
       data=[capacity_L, capacity_H, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+      is_extended_id=False)
+    
+    msg10 = can.Message(arbitration_id = CAN_tx_msg["Batcell"], 
+      data=[min_cell_volt_L, min_cell_volt_H, max_cell_volt_L, max_cell_volt_H, min_cell_temp_L, min_cell_temp_H, max_cell_temp_L, max_cell_temp_H],
       is_extended_id=False)
     
     #logger.debug(self._can_bus)
@@ -839,6 +868,11 @@ class SmaDriver:
       time.sleep(.100)
 
       self._can_bus.send(msg9)
+      #logger.debug("Message sent on {}".format(self._can_bus.channel_info))
+
+      time.sleep(.100)
+
+      self._can_bus.send(msg10)
       #logger.debug("Message sent on {}".format(self._can_bus.channel_info))
 
       #logger.info("Sent to SI: {0}, {1}, {2}, {3}, {4}". \
