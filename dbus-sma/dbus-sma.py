@@ -115,7 +115,9 @@ def getSignedNumber(number, bitLength):
         return number & mask
 
 def bytes(integer):
-    return divmod(integer, 0x100)
+    # ensure we use a 16-bit two's-complement representation so divmod yields 0..255 bytes
+    i = int(integer) & 0xFFFF
+    return divmod(i, 0x100)
 
 class BMSData:
   def __init__(self, max_battery_voltage, min_battery_voltage, low_battery_voltage, \
